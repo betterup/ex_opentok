@@ -29,6 +29,16 @@ defmodule ExOpentok.Client do
         HTTPotion.get(url, [
           headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
         ])
+      :patch ->
+        HTTPotion.patch(url, [
+          body: body,
+          headers: ["X-OPENTOK-AUTH": Token.jwt(), "Accept": "application/json", "Content-Type": "application/json"]
+        ])
+      :put ->
+        HTTPotion.put(url, [
+          body: body,
+          headers: ["X-OPENTOK-AUTH": Token.jwt(), "Accept": "application/json", "Content-Type": "application/json"]
+        ])
       :post ->
         if body do
           HTTPotion.post(url, [
