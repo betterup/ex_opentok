@@ -10,14 +10,19 @@ defmodule ExOpentok.Token do
   @doc """
   Generate unique token to access session.
   """
-  def generate(session_id) do
+  def generate(session_id), do: generate(session_id, "publisher")
+  def generate(session_id, role) when role in ["subscriber", "publisher", "moderator"] do
+    do_generate(session_id, role)
+  end
+
+  defp do_generate(session_id, role) do
     session_id
-    |> data_content()
+    |> data_content(role)
     |> token_process(session_id)
   end
 
-  defp data_content(session_id) do
-    "session_id=#{session_id}&create_time=#{:os.system_time(:seconds)}&role=publisher&nonce=#{nonce()}"
+  defp data_content(session_id, role) do
+    "session_id=#{session_id}&create_time=#{:os.system_time(:seconds)}&role=#{role}&nonce=#{nonce()}"
   end
 
   defp token_process(data_content, session_id) do
