@@ -35,6 +35,31 @@ defmodule ExOpentok.Session do
     |> Client.handle_response()
   end
 
+  # https://tokbox.com/developer/rest/#force_mute_stream
+  @spec mute(String.t(), String.t()) :: %{}
+  def mute(session_id, stream_id) do
+    base_session_url(session_id, "/stream/#{stream_id}/mute")
+    |> Client.http_request(:post)
+    |> Client.handle_response()
+  end
+
+
+  # https://tokbox.com/developer/rest/#force_mute_session
+  @spec mute_all(String.t(), [String.t()]) :: %{}
+  def mute_all(session_id, excluded_stream_ids \\ []) do
+    body = %{
+      active: true,
+      excludedStreamIds: excluded_stream_ids
+    } |> IO.inspect()
+
+    base_session_url(session_id, "/mute") |> ExOpentok.Client.http_request(:post, body) |> ExOpentok.Client.handle_response()
+  end
+
+  @spec base_session_url(String.t(), String.t()) :: String.t()
+  defp base_session_url(session_id, path \\ "") do
+    "https://api.opentok.com/v2/project/#{ExOpentok.config(:key)}/session/#{session_id}#{path}"
+  end
+
   defp format_response(session) do
     Map.merge(session,
                 %{
