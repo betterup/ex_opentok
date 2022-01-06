@@ -13,6 +13,17 @@ defmodule ExOpentok.Client do
   """
   def http_request(url, type \\ :get, body \\ nil) do
     HTTPotion.start()
+    do_http_request(url, type, body)
+  end
+
+  defp do_http_request(url, :post, body) when is_map(body) do
+    HTTPotion.post(url, [
+      body: Jason.encode!(body),
+      headers: ["X-OPENTOK-AUTH": Token.jwt(), "Accept": "application/json", "Content-Type": "application/json"]
+    ])
+  end
+
+  defp do_http_request(url, type \\ :get, body \\ nil) do
     case type do
       :get ->
         HTTPotion.get(url, [
@@ -29,7 +40,6 @@ defmodule ExOpentok.Client do
             headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
           ])
         end
-
       :delete ->
         HTTPotion.delete(url, [
           headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]

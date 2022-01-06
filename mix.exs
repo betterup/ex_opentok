@@ -19,6 +19,7 @@ defmodule ExOpentok.Mixfile do
      {:joken, "~> 1.4.1"},
      {:poison, "~> 2.0"},
      {:httpotion, "~> 3.0"},
+     {:jason, "~> 1.3"},
      {:credo, "~> 0.5", only: [:dev, :test]}]
   end
 
