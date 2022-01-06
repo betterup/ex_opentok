@@ -52,6 +52,8 @@ defmodule ExOpentok.Client do
   """
   def handle_response(response) do
     case response do
+      %{status_code: 200, body: ""} ->
+        %{}
       %{status_code: 200, body: body} ->
         body |> Poison.decode!() |> handle_data_struct()
       %{status_code: 405, body: body} ->
