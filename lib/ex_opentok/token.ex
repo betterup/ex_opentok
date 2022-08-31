@@ -28,7 +28,6 @@ defmodule ExOpentok.Token do
   defp token_process(data_content, session_id) do
     data_content
     |> sign_string(ExOpentok.config(:secret))
-    |> data_string(ExOpentok.config(:ttl))
     |> token(data_content)
   end
 
@@ -37,8 +36,6 @@ defmodule ExOpentok.Token do
   end
 
   defp nonce, do: Base.encode16(:crypto.strong_rand_bytes(16))
-
-  defp data_string(string, expire_time), do: string <> "&expire_time=#{expire_time}"
 
   @doc """
   Generate JWT to access ExOpentok API services.
