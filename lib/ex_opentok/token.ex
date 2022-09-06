@@ -11,18 +11,33 @@ defmodule ExOpentok.Token do
   Generate unique token to access session.
   """
   def generate(session_id), do: generate(session_id, "publisher")
-  def generate(session_id, role) when role in ["subscriber", "publisher", "moderator"] do
-    do_generate(session_id, role)
+
+  def generate(session_id, role, connection_data \\ nil)
+      when role in ["subscriber", "publisher", "moderator"] do
+    do_generate(session_id, role, connection_data)
   end
 
-  defp do_generate(session_id, role) do
+  defp do_generate(session_id, role, connection_data) do
     session_id
     |> data_content(role)
+    |> add_connection_data(connection_data)
     |> token_process(session_id)
   end
 
   defp data_content(session_id, role) do
     "session_id=#{session_id}&create_time=#{:os.system_time(:seconds)}&role=#{role}&nonce=#{nonce()}"
+  end
+
+  defp add_connection_data(params, nil) do
+    params
+  end
+
+  defp add_connection_data(params, data) when is_binary(data) do
+    if String.length(data) < 1000 do
+      params <> "&connection_data=#{data}"
+    else
+      raise "Connection data must be less than 1000 characters"
+    end
   end
 
   defp token_process(data_content, session_id) do
@@ -32,7 +47,8 @@ defmodule ExOpentok.Token do
   end
 
   defp token(signature, data_string) do
-    @token_prefix <> Base.encode64("partner_id=#{ExOpentok.config(:key)}&sig=#{signature}:#{data_string}")
+    @token_prefix <>
+      Base.encode64("partner_id=#{ExOpentok.config(:key)}&sig=#{signature}:#{data_string}")
   end
 
   defp nonce, do: Base.encode16(:crypto.strong_rand_bytes(16))
@@ -40,7 +56,7 @@ defmodule ExOpentok.Token do
   @doc """
   Generate JWT to access ExOpentok API services.
   """
-  @spec jwt() :: String.t
+  @spec jwt() :: String.t()
   def jwt do
     import Joken
 
@@ -61,9 +77,9 @@ defmodule ExOpentok.Token do
     }
   end
 
-  @spec sign_string(String.t, String.t) :: String.t
+  @spec sign_string(String.t(), String.t()) :: String.t()
   defp sign_string(string, secret) do
-      :crypto.mac(:hmac, :sha, secret, string)
-      |> Base.encode16
+    :crypto.mac(:hmac, :sha, secret, string)
+    |> Base.encode16()
   end
 end
