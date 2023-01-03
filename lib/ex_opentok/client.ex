@@ -17,33 +17,39 @@ defmodule ExOpentok.Client do
   end
 
   defp do_http_request(url, :post, body) when is_map(body) do
-    HTTPotion.post(url, [
+    HTTPotion.post(url,
       body: Jason.encode!(body),
-      headers: ["X-OPENTOK-AUTH": Token.jwt(), "Accept": "application/json", "Content-Type": "application/json"]
-    ])
+      headers: [
+        "X-OPENTOK-AUTH": Token.jwt(),
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      ]
+    )
   end
 
   defp do_http_request(url, type \\ :get, body \\ nil) do
     case type do
       :get ->
-        HTTPotion.get(url, [
+        HTTPotion.get(url,
           headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
-        ])
+        )
+
       :post ->
         if body do
-          HTTPotion.post(url, [
+          HTTPotion.post(url,
             body: body,
-            headers: ["X-OPENTOK-AUTH": Token.jwt(), "Accept": "application/json"]
-          ])
+            headers: ["X-OPENTOK-AUTH": Token.jwt(), Accept: "application/json"]
+          )
         else
-          HTTPotion.post(url, [
+          HTTPotion.post(url,
             headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
-          ])
+          )
         end
+
       :delete ->
-        HTTPotion.delete(url, [
+        HTTPotion.delete(url,
           headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
-        ])
+        )
     end
   end
 
@@ -54,10 +60,13 @@ defmodule ExOpentok.Client do
     case response do
       %{status_code: 200, body: ""} ->
         %{}
+
       %{status_code: 200, body: body} ->
         body |> Poison.decode!() |> handle_data_struct()
+
       %{status_code: 405, body: body} ->
         raise "405 Method not allowed"
+
       _ ->
         raise "Error #{response.status_code} -> ExOpentok query:\n #{inspect(response)}"
     end
