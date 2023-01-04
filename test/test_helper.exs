@@ -57,10 +57,10 @@ defmodule ExOpentokTest.Mock do
   end
 
   def http_response_archive_list do
-    %HTTPotion.Response{
+    %{
       body:
         "{\"count\":1,\"items\":[{\"id\":\"5c48fb13-f27a-465d-94a7-e581d8ed49f9\",\"status\":\"expired\",\"name\":\"Ruby Archiving Sample App\",\"reason\":\"user initiated\",\"sessionId\":\"1_MX40NTgxMTExMn5-MTQ5MTY4MTU4NzU4Nn5VVU8yY1FsdThVVUU5UUVzd1VkTEh1SDJ-fg\",\"projectId\":45811112,\"createdAt\":1491682306000,\"size\":1742751,\"duration\":21,\"outputMode\":\"composed\",\"hasAudio\":true,\"hasVideo\":true,\"sha256sum\":\"97+WlyjwtOvrrNr2zG8NBTvZgqpSq5PGdgonBOTK7Fw=\",\"password\":\"\",\"updatedAt\":1491943883000,\"url\":null,\"partnerId\":45811112}]}",
-      headers: %HTTPotion.Headers{
+      headers: %{
         hdrs: %{
           "connection" => "keep-alive",
           "content-type" => "application/json",
@@ -70,14 +70,14 @@ defmodule ExOpentokTest.Mock do
           "transfer-encoding" => "chunked"
         }
       },
-      status_code: 200
+      status: 200
     }
   end
 
   def http_response_error do
-    %HTTPotion.Response{
+    %{
       body: "{}",
-      headers: %HTTPotion.Headers{
+      headers: %{
         hdrs: %{
           "connection" => "keep-alive",
           "content-type" => "application/json",
@@ -87,7 +87,7 @@ defmodule ExOpentokTest.Mock do
           "transfer-encoding" => "chunked"
         }
       },
-      status_code: 400
+      status: 400
     }
   end
 

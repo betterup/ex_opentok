@@ -1,5 +1,6 @@
 defmodule ExOpentok.Archive do
   @derive [Poison.Encoder]
+  use Tesla
   require Logger
   alias ExOpentok.Token
   alias ExOpentok.Client
@@ -24,33 +25,31 @@ defmodule ExOpentok.Archive do
   outputMode (String) — (Optional) Whether all streams in the archive are recorded to a single file ("composed", the default) or to individual files ("individual").
   """
   def start(sessionId) do
-    IO.inspect(sessionId)
-    HTTPotion.start()
-
     response =
-      HTTPotion.post(ExOpentok.api_url() <> "/#{ExOpentok.config(:key)}/archive",
-        body: '{"sessionId" : "#{sessionId}", "name" : "#{generate_name()}"}',
+      post(
+        ExOpentok.api_url() <> "/#{ExOpentok.config(:key)}/archive",
+        '{"sessionId" : "#{sessionId}", "name" : "#{generate_name()}"}',
         headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
       )
 
     case response do
-      %{status_code: 200, body: body} ->
-        body |> Poison.decode!()
+      {:ok, %{status: 200, body: body}} ->
+        body
 
-      %{status_code: 400} ->
+      {:ok, %{status: 400}} ->
         raise "Error 400 The archive could not be started. The request was invalid or the session has no connected clients."
         {:error, ExOpentok.Exception}
 
-      %{status_code: 403, body: body} ->
+      {:ok, %{status: 403}} ->
         raise "Error 403 Authentication failed while starting an archive. API Key: #{ExOpentok.config(:key)}"
 
-      %{status_code: 404, body: body} ->
+      {:ok, %{status: 404}} ->
         raise "Error 404 The archive could not be started. The Session ID does not exist: #{sessionId}"
 
-      %{status_code: 409, body: body} ->
+      {:ok, %{status: 409}} ->
         raise "Error 409 The archive could not be started. The session could be peer-to-peer or the session is already being recorded."
 
-      %{status_code: 415, body: body} ->
+      {:ok, %{status: 415}} ->
         raise "Error 415 Server is not able to process the Content-Type of the request."
 
       _ ->

@@ -37,7 +37,7 @@ defmodule ExOpentokTest do
         :get
       )
 
-    assert response.status_code == 200
+    assert response.status == 200
   end
 
   # Client.handle_response()

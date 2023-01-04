@@ -4,7 +4,6 @@ defmodule ExOpentok.Session do
   """
 
   require Logger
-  # use HTTPoison.Base
   alias ExOpentok.Client
   alias ExOpentok.Token
 
@@ -46,12 +45,10 @@ defmodule ExOpentok.Session do
   # https://tokbox.com/developer/rest/#force_mute_session
   @spec mute_all(String.t(), [String.t()]) :: %{}
   def mute_all(session_id, excluded_stream_ids \\ []) do
-    body =
-      %{
-        active: true,
-        excludedStreamIds: excluded_stream_ids
-      }
-      |> IO.inspect()
+    body = %{
+      active: true,
+      excludedStreamIds: excluded_stream_ids
+    }
 
     base_session_url(session_id, "/mute")
     |> ExOpentok.Client.http_request(:post, body)

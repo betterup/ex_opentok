@@ -22,10 +22,9 @@ defmodule ExOpentok.Mixfile do
     [
       {:uuid, "~> 1.1"},
       {:joken, "~> 1.4.1"},
+      {:tesla, "~> 1.4"},
       {:poison, "~> 2.0"},
-      {:httpotion, "~> 3.0"},
-      {:jason, "~> 1.3"},
-      {:credo, "~> 0.5", only: [:dev, :test]}
+      {:credo, "~> 1.6", only: [:dev, :test]}
     ]
   end
 
@@ -37,7 +36,6 @@ defmodule ExOpentok.Mixfile do
   end
 
   defp package do
-    # These are the default files included in the package
     [
       name: :ex_opentok,
       files: ["lib", "mix.exs", "README*"],
