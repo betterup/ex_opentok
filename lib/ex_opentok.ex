@@ -31,6 +31,10 @@ defmodule ExOpentok do
     ExOpentok.Session.init()
   end
 
+  def init! do
+    ExOpentok.Session.init!()
+  end
+
   @doc false
   def version, do: @version
 

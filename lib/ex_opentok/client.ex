@@ -4,14 +4,24 @@ defmodule ExOpentok.Client do
   alias ExOpentok.Token
   alias ExOpentok.Exception
 
-  plug(Tesla.Middleware.Timeout, timeout: 2_000)
+  plug Tesla.Middleware.Timeout, timeout: 2_000
+
+  plug Tesla.Middleware.Retry,
+    delay: 100,
+    max_retries: 10,
+    max_delay: 4_000,
+    should_retry: fn
+      {:ok, %{status: status}} when status >= 500 -> true
+      {:ok, _} -> false
+      {:error, _} -> true
+    end
 
   @moduledoc """
-  Wrapper for HTTPotion
+  Wrapper for Tesla
   """
 
   @doc """
-  HTTP Client's request with HTTPotion.
+  HTTP Client's request with Tesla.
   """
   def http_request(url, type \\ :get, body \\ nil) do
     do_http_request(url, type, body)
@@ -62,19 +72,26 @@ defmodule ExOpentok.Client do
   def handle_response(response) do
     case response do
       {:ok, %{status: 200, body: ""}} ->
-        %{}
+        {:ok, %{}}
 
       {:ok, %{status: 200, body: body}} ->
-        body |> Poison.decode!() |> handle_data_struct()
+        {:ok, body |> Poison.decode!() |> handle_data_struct()}
 
       {:ok, %{status: 405, body: body}} ->
-        raise "405 Method not allowed"
+        {:ok, "405 Method not allowed"}
 
       {:ok, response} ->
-        raise "Error #{response.status} -> ExOpentok query:\n #{inspect(response)}"
+        {:error, "Error #{response.status} -> ExOpentok query:\n #{inspect(response)}"}
 
       {:error, error} ->
-        raise "Error #{inspect(error)} -> ExOpentok query:\n #{inspect(response)}"
+        {:error, "Error #{inspect(error)} -> ExOpentok query:\n #{inspect(response)}"}
+    end
+  end
+
+  def handle_response!(response) do
+    case handle_response(response) do
+      {:ok, output} -> output
+      {:error, error} -> raise error
     end
   end
 
