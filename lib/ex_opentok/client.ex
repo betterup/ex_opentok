@@ -4,14 +4,24 @@ defmodule ExOpentok.Client do
   alias ExOpentok.Token
   alias ExOpentok.Exception
 
-  plug(Tesla.Middleware.Timeout, timeout: 2_000)
+  plug Tesla.Middleware.Timeout, timeout: 2_000
+
+  plug Tesla.Middleware.Retry,
+    delay: 100,
+    max_retries: 10,
+    max_delay: 4_000,
+    should_retry: fn
+      {:ok, %{status: status}} when status >= 500 -> true
+      {:ok, _} -> false
+      {:error, _} -> true
+    end
 
   @moduledoc """
-  Wrapper for HTTPotion
+  Wrapper for Tesla
   """
 
   @doc """
-  HTTP Client's request with HTTPotion.
+  HTTP Client's request with Tesla.
   """
   def http_request(url, type \\ :get, body \\ nil) do
     do_http_request(url, type, body)
