@@ -19,5 +19,4 @@ defmodule ExOpentok.Exception do
   unless ExOpentok.config(:ttl) do
     raise "ExOpentok requires :ttl to be configured"
   end
-
 end

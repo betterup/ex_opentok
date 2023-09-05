@@ -31,8 +31,13 @@ defmodule ExOpentokTest do
 
   # Client.http_request()
   test "should get 200 when request get" do
-    response = Client.http_request("https://api.opentok.com/v2/project/#{@api_key}/archive?offset=0&count=1000", :get)
-    assert response.status_code == 200
+    response =
+      Client.http_request(
+        "https://api.opentok.com/v2/project/#{@api_key}/archive?offset=0&count=1000",
+        :get
+      )
+
+    assert response.status == 200
   end
 
   # Client.handle_response()
@@ -40,12 +45,13 @@ defmodule ExOpentokTest do
     response = Mock.http_response_archive_list()
     assert Client.handle_response(response) == Mock.archive_list()
   end
+
   # Client.handle_response()
   test "should raise if no response 200" do
-   assert_raise RuntimeError, fn ->
+    assert_raise RuntimeError, fn ->
       Mock.http_response_error() |> Client.handle_response()
-   end
- end
+    end
+  end
 
   # EXCEPTION
 
@@ -67,5 +73,4 @@ defmodule ExOpentokTest do
   test "should return a jwt of 232 bytes" do
     assert Helper.similar_token?(Token.jwt(), 232)
   end
-
 end

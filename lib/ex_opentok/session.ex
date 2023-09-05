@@ -4,7 +4,6 @@ defmodule ExOpentok.Session do
   """
 
   require Logger
-  # use HTTPoison.Base
   alias ExOpentok.Client
   alias ExOpentok.Token
 
@@ -43,16 +42,17 @@ defmodule ExOpentok.Session do
     |> Client.handle_response()
   end
 
-
   # https://tokbox.com/developer/rest/#force_mute_session
   @spec mute_all(String.t(), [String.t()]) :: %{}
   def mute_all(session_id, excluded_stream_ids \\ []) do
     body = %{
       active: true,
       excludedStreamIds: excluded_stream_ids
-    } |> IO.inspect()
+    }
 
-    base_session_url(session_id, "/mute") |> ExOpentok.Client.http_request(:post, body) |> ExOpentok.Client.handle_response()
+    base_session_url(session_id, "/mute")
+    |> ExOpentok.Client.http_request(:post, body)
+    |> ExOpentok.Client.handle_response()
   end
 
   @spec base_session_url(String.t(), String.t()) :: String.t()
@@ -61,12 +61,13 @@ defmodule ExOpentok.Session do
   end
 
   defp format_response(session) do
-    Map.merge(session,
-                %{
-                  api_key: ExOpentok.config(:key),
-                  token: Token.generate(session["session_id"])
-                }
-              )
+    Map.merge(
+      session,
+      %{
+        api_key: ExOpentok.config(:key),
+        token: Token.generate(session["session_id"])
+      }
+    )
   end
 
   def init, do: create() |> format_response()
@@ -78,8 +79,10 @@ defmodule ExOpentok.Session do
     cond do
       opts.location == nil || opts.location == "" ->
         ""
+
       valid_ip?(opts.location) ->
         "location=#{opts.location}&"
+
       true ->
         raise "ip format incorrect or let location empty"
     end
@@ -92,14 +95,17 @@ defmodule ExOpentok.Session do
   """
   defp mode(opts \\ %{media_mode: "routed", archive_mode: "manual", location: nil}) do
     case opts do
-    %{media_mode: "routed"} ->
-      "p2p.preference=disabled"
-    %{archive_mode: "always"} ->
-      "archiveMode&p2p.preference=disabled"
-    %{media_mode: "relayed", location: ip} ->
-      "p2p.preference=enabled"
-    _ ->
-      raise "You need to set media mode to relayed or routed"
+      %{media_mode: "routed"} ->
+        "p2p.preference=disabled"
+
+      %{archive_mode: "always"} ->
+        "archiveMode&p2p.preference=disabled"
+
+      %{media_mode: "relayed", location: ip} ->
+        "p2p.preference=enabled"
+
+      _ ->
+        raise "You need to set media mode to relayed or routed"
     end
   end
 
@@ -109,9 +115,9 @@ defmodule ExOpentok.Session do
   defp http_body(opts), do: location(opts) <> mode(opts)
 
   def delete(session_id, connection_id) do
-    ExOpentok.api_url() <> "/#{ExOpentok.config(:key)}/session/#{session_id}/connection/#{connection_id}"
+    (ExOpentok.api_url() <>
+       "/#{ExOpentok.config(:key)}/session/#{session_id}/connection/#{connection_id}")
     |> Client.http_request()
     |> Client.handle_response()
   end
-
 end

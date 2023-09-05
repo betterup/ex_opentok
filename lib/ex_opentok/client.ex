@@ -1,8 +1,10 @@
 defmodule ExOpentok.Client do
+  use Tesla
   require Logger
-  # use HTTPoison.Base
   alias ExOpentok.Token
   alias ExOpentok.Exception
+
+  plug(Tesla.Middleware.Timeout, timeout: 2_000)
 
   @moduledoc """
   Wrapper for HTTPotion
@@ -12,38 +14,45 @@ defmodule ExOpentok.Client do
   HTTP Client's request with HTTPotion.
   """
   def http_request(url, type \\ :get, body \\ nil) do
-    HTTPotion.start()
     do_http_request(url, type, body)
   end
 
   defp do_http_request(url, :post, body) when is_map(body) do
-    HTTPotion.post(url, [
-      body: Jason.encode!(body),
-      headers: ["X-OPENTOK-AUTH": Token.jwt(), "Accept": "application/json", "Content-Type": "application/json"]
-    ])
+    post(url, Jason.encode!(body),
+      headers: [
+        "X-OPENTOK-AUTH": Token.jwt(),
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      ]
+    )
   end
 
   defp do_http_request(url, type \\ :get, body \\ nil) do
     case type do
       :get ->
-        HTTPotion.get(url, [
+        get(url,
           headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
-        ])
+        )
+
       :post ->
         if body do
-          HTTPotion.post(url, [
-            body: body,
-            headers: ["X-OPENTOK-AUTH": Token.jwt(), "Accept": "application/json"]
-          ])
+          post(url, body,
+            headers: [
+              "X-OPENTOK-AUTH": Token.jwt(),
+              Accept: "application/json",
+              "Content-Type": "application/x-www-form-urlencoded"
+            ]
+          )
         else
-          HTTPotion.post(url, [
+          post(url, "",
             headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
-          ])
+          )
         end
+
       :delete ->
-        HTTPotion.delete(url, [
+        delete(url,
           headers: ["X-OPENTOK-AUTH": Token.jwt(), "Content-Type": "application/json"]
-        ])
+        )
     end
   end
 
@@ -52,14 +61,20 @@ defmodule ExOpentok.Client do
   """
   def handle_response(response) do
     case response do
-      %{status_code: 200, body: ""} ->
+      {:ok, %{status: 200, body: ""}} ->
         %{}
-      %{status_code: 200, body: body} ->
+
+      {:ok, %{status: 200, body: body}} ->
         body |> Poison.decode!() |> handle_data_struct()
-      %{status_code: 405, body: body} ->
+
+      {:ok, %{status: 405, body: body}} ->
         raise "405 Method not allowed"
-      _ ->
-        raise "Error #{response.status_code} -> ExOpentok query:\n #{inspect(response)}"
+
+      {:ok, response} ->
+        raise "Error #{response.status} -> ExOpentok query:\n #{inspect(response)}"
+
+      {:error, error} ->
+        raise "Error #{inspect(error)} -> ExOpentok query:\n #{inspect(response)}"
     end
   end
 
