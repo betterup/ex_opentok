@@ -72,19 +72,26 @@ defmodule ExOpentok.Client do
   def handle_response(response) do
     case response do
       {:ok, %{status: 200, body: ""}} ->
-        %{}
+        {:ok, %{}}
 
       {:ok, %{status: 200, body: body}} ->
-        body |> Poison.decode!() |> handle_data_struct()
+        {:ok, body |> Poison.decode!() |> handle_data_struct()}
 
       {:ok, %{status: 405, body: body}} ->
-        raise "405 Method not allowed"
+        {:ok, "405 Method not allowed"}
 
       {:ok, response} ->
-        raise "Error #{response.status} -> ExOpentok query:\n #{inspect(response)}"
+        {:error, "Error #{response.status} -> ExOpentok query:\n #{inspect(response)}"}
 
       {:error, error} ->
-        raise "Error #{inspect(error)} -> ExOpentok query:\n #{inspect(response)}"
+        {:error, "Error #{inspect(error)} -> ExOpentok query:\n #{inspect(response)}"}
+    end
+  end
+
+  def handle_response!(response) do
+    case handle_response(response) do
+      {:ok, output} -> output
+      {:error, error} -> raise error
     end
   end
 

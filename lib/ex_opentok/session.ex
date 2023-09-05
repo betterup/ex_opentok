@@ -34,12 +34,26 @@ defmodule ExOpentok.Session do
     |> Client.handle_response()
   end
 
+  def create!(opts) do
+    case create(opts) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
+  end
+
   # https://tokbox.com/developer/rest/#force_mute_stream
   @spec mute(String.t(), String.t()) :: %{}
   def mute(session_id, stream_id) do
     base_session_url(session_id, "/stream/#{stream_id}/mute")
     |> Client.http_request(:post)
     |> Client.handle_response()
+  end
+
+  def mute!(session_id, stream_id) do
+    case mute(session_id, stream_id) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
   end
 
   # https://tokbox.com/developer/rest/#force_mute_session
@@ -55,22 +69,39 @@ defmodule ExOpentok.Session do
     |> ExOpentok.Client.handle_response()
   end
 
+  def mute_all!(session_id, excluded_stream_ids) do
+    case mute_all(session_id, excluded_stream_ids) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
+  end
+
   @spec base_session_url(String.t(), String.t()) :: String.t()
   defp base_session_url(session_id, path \\ "") do
     "https://api.opentok.com/v2/project/#{ExOpentok.config(:key)}/session/#{session_id}#{path}"
   end
 
-  defp format_response(session) do
-    Map.merge(
-      session,
-      %{
-        api_key: ExOpentok.config(:key),
-        token: Token.generate(session["session_id"])
-      }
-    )
+  defp format_response({:ok, session}) do
+    {:ok,
+     Map.merge(
+       session,
+       %{
+         api_key: ExOpentok.config(:key),
+         token: Token.generate(session["session_id"])
+       }
+     )}
   end
 
+  defp format_response(error), do: error
+
   def init, do: create() |> format_response()
+
+  def init! do
+    case init() do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
+  end
 
   @doc """
   Handle location
@@ -119,5 +150,12 @@ defmodule ExOpentok.Session do
        "/#{ExOpentok.config(:key)}/session/#{session_id}/connection/#{connection_id}")
     |> Client.http_request()
     |> Client.handle_response()
+  end
+
+  def delete!(session_id, connection_id) do
+    case delete(session_id, connection_id) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
   end
 end

@@ -81,6 +81,13 @@ defmodule ExOpentok.Archive do
     |> Client.handle_response()
   end
 
+  def stop!(archive_id) do
+    case stop(archive_id) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
+  end
+
   @doc """
   Deleting an archive
 
@@ -94,6 +101,13 @@ defmodule ExOpentok.Archive do
     (ExOpentok.api_url() <> "#{ExOpentok.config(:key)}/archive/#{archive_id}")
     |> Client.http_request(:delete)
     |> Client.handle_response()
+  end
+
+  def delete!(archive_id) do
+    case delete(archive_id) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
   end
 
   @doc """
@@ -133,9 +147,23 @@ defmodule ExOpentok.Archive do
     |> Client.handle_response()
   end
 
+  def list!(opts \\ %{offset: 0, count: 1000}) do
+    case list(opts) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
+  end
+
   def find(archive_id) do
     (ExOpentok.api_url() <> "#{ExOpentok.config(:key)}/archive/#{archive_id}")
     |> Client.http_request()
     |> Client.handle_response()
+  end
+
+  def find!(archive_id) do
+    case find(archive_id) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
   end
 end

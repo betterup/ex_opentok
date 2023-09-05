@@ -4,8 +4,8 @@ defmodule ExOpentokTest do
   alias ExOpentok.{Archive, Client, Exception, Session, Token}
 
   @api_key ExOpentok.config(:key)
-  @session ExOpentok.init()
-  @list ExOpentok.Archive.list()
+  @session ExOpentok.init!()
+  @list ExOpentok.Archive.list!()
 
   # ARCHIVE
 
@@ -21,7 +21,7 @@ defmodule ExOpentokTest do
     first_item = @list["items"] |> Enum.at(0)
 
     first_item["id"]
-    |> Archive.find()
+    |> Archive.find!()
     |> Helper.same_map?(Helper.archive_keys())
   end
 
@@ -31,7 +31,7 @@ defmodule ExOpentokTest do
 
   # Client.http_request()
   test "should get 200 when request get" do
-    response =
+    {:ok, response} =
       Client.http_request(
         "https://api.opentok.com/v2/project/#{@api_key}/archive?offset=0&count=1000",
         :get
@@ -40,16 +40,16 @@ defmodule ExOpentokTest do
     assert response.status == 200
   end
 
-  # Client.handle_response()
+  # Client.handle_response!()
   test "should handle response 200" do
     response = Mock.http_response_archive_list()
-    assert Client.handle_response(response) == Mock.archive_list()
+    assert Client.handle_response!(response) == Mock.archive_list()
   end
 
-  # Client.handle_response()
+  # Client.handle_response!()
   test "should raise if no response 200" do
     assert_raise RuntimeError, fn ->
-      Mock.http_response_error() |> Client.handle_response()
+      Mock.http_response_error() |> Client.handle_response!()
     end
   end
 
